@@ -40,27 +40,37 @@ type Info struct {
 	Max  []byte
 }
 
-func main() {
+var (
+	Buffer           chan Info
+	n_sensores       *int
+	n_buffer         *int
+	ambientes        *string
+	listaDeAmbientes []string
+)
+
+func init() {
 	/*	flags
 		--n_sensores=n
 		--ambientes=path1 path2 ... pathn
 		--n_buffer=n
 	*/
-	n_sensores := flag.Int("n_sensores", 1, "Número de sensores")
-	ambientes := flag.String("ambientes", "", "Lista de ambientes")
-	n_buffer := flag.Int("n_buffer", 0, "Tamanho do buffer")
+	n_sensores = flag.Int("n_sensores", 1, "Número de sensores")
+	ambientes = flag.String("ambientes", "", "Lista de ambientes")
+	n_buffer = flag.Int("n_buffer", 0, "Tamanho do buffer")
 	flag.Parse()
 
-	listaDeAmbientes := strings.Split(*ambientes, " ")
+	listaDeAmbientes = strings.Split(*ambientes, " ")
 	if len(listaDeAmbientes) > *n_sensores {
 		fmt.Println("você passou mais ambientes que sensores\n Por favor, passa um numero menor ou igual ao numero de sensores.")
 		return
 	}
 
-	buffer := make(chan Info, *n_buffer)
+	Buffer = make(chan Info, *n_buffer)
+}
 
+func main() {
 	for _, ambiente := range listaDeAmbientes {
-		go getInfo(ambiente, buffer)
+		go getInfo(ambiente, Buffer)
 	}
 }
 
